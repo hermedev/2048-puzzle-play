@@ -6,11 +6,15 @@
     <title>Unity Web Player | 2048 Puzzle</title>
     <link rel="shortcut icon" href="TemplateData/favicon.ico">
     <link rel="stylesheet" href="TemplateData/style.css">
+    <style>
+      /* Make the canvas fill its container so it scales with the window */
+      #unity-canvas { width: 100%; height: 100%; }
+    </style>
   </head>
   <body>
     <div id="unity-container" class="unity-desktop">
       <div id="unity-fullscreen-container">
-        <canvas id="unity-canvas" width="960" height="600" tabindex="-1"></canvas>
+        <canvas id="unity-canvas" width="1280" height="720" tabindex="-1"></canvas>
         <div id="unity-loading-container">
           <div id="unity-loading-bar">
             <div id="unity-logo"></div>
@@ -114,9 +118,23 @@
 
 
       } else {
-        // Desktop style: Render the game canvas container in a window that can be maximized to fullscreen:
-        fullscreenContainer.style.width = "960px";
-        fullscreenContainer.style.height = "600px";
+        // Desktop style: fit the browser window while keeping the 16:9 shape
+        // of the 1280x720 UI (no stretching, no fixed small box).
+        function resizeGame() {
+          var footerHeight = 38;                       // height of the Unity footer bar
+          var w = window.innerWidth;
+          var h = window.innerHeight - footerHeight;
+          var aspect = 16 / 9;                         // 1280 / 720
+          if (w / h > aspect) {
+            w = h * aspect;                            // window is too wide: limit by height
+          } else {
+            h = w / aspect;                            // window is too tall: limit by width
+          }
+          fullscreenContainer.style.width = w + "px";
+          fullscreenContainer.style.height = h + "px";
+        }
+        resizeGame();
+        window.addEventListener("resize", resizeGame);
       }
 
 
