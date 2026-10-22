@@ -3,34 +3,33 @@
   <head>
     <meta charset="utf-8">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <title>Unity WebGL Player | MY puzzle</title>
+    <title>Unity Web Player | 2048 Puzzle</title>
     <link rel="shortcut icon" href="TemplateData/favicon.ico">
     <link rel="stylesheet" href="TemplateData/style.css">
   </head>
   <body>
     <div id="unity-container" class="unity-desktop">
-      <canvas id="unity-canvas" width=960 height=600 tabindex="-1"></canvas>
-      <div id="unity-loading-bar">
-        <div id="unity-logo"></div>
-        <div id="unity-progress-bar-empty">
-          <div id="unity-progress-bar-full"></div>
+      <div id="unity-fullscreen-container">
+        <canvas id="unity-canvas" width="960" height="600" tabindex="-1"></canvas>
+        <div id="unity-loading-container">
+          <div id="unity-loading-bar">
+            <div id="unity-logo"></div>
+            <div id="unity-progress-bar-empty">
+              <div id="unity-progress-bar-full"></div>
+            </div>
+          </div>
         </div>
       </div>
       <div id="unity-warning"> </div>
       <div id="unity-footer">
-        <div id="unity-webgl-logo"></div>
+        <div id="unity-logo-title-footer"></div>
         <div id="unity-fullscreen-button"></div>
-        <div id="unity-build-title">MY puzzle</div>
+        <div id="unity-build-title">2048 Puzzle</div>
       </div>
     </div>
     <script>
-
-      var container = document.querySelector("#unity-container");
-      var canvas = document.querySelector("#unity-canvas");
-      var loadingBar = document.querySelector("#unity-loading-bar");
-      var progressBarFull = document.querySelector("#unity-progress-bar-full");
-      var fullscreenButton = document.querySelector("#unity-fullscreen-button");
-      var warningBanner = document.querySelector("#unity-warning");
+      let canvas = document.querySelector("#unity-canvas");
+      let fullscreenContainer = document.querySelector("#unity-fullscreen-container");
 
       // Shows a temporary message banner/ribbon for a few seconds, or
       // a permanent error message on top of the canvas if type=='error'.
@@ -39,6 +38,7 @@
       // way that non-critical warnings and error messages are presented to the
       // user.
       function unityShowBanner(msg, type) {
+        var warningBanner = document.querySelector("#unity-warning");
         function updateBannerVisibility() {
           warningBanner.style.display = warningBanner.children.length ? 'block' : 'none';
         }
@@ -57,16 +57,29 @@
       }
 
       var buildUrl = "Build";
-      var loaderUrl = buildUrl + "/WebGL Builds.loader.js";
+      var loaderUrl = buildUrl + "/2048-puzzle-play.loader.js";
       var config = {
-        dataUrl: buildUrl + "/WebGL Builds.data.unityweb",
-        frameworkUrl: buildUrl + "/WebGL Builds.framework.js.unityweb",
-        codeUrl: buildUrl + "/WebGL Builds.wasm.unityweb",
+        arguments: [],
+        dataUrl: buildUrl + "/2048-puzzle-play.data.unityweb",
+        frameworkUrl: buildUrl + "/2048-puzzle-play.framework.js.unityweb",
+        codeUrl: buildUrl + "/2048-puzzle-play.wasm.unityweb",
         streamingAssetsUrl: "StreamingAssets",
-        companyName: "Phantom Gaming",
-        productName: "MY puzzle",
+
+        // If you have a custom web site structure, or want to place multiple Unity build instances on the same page,
+        // you can pass fullscreenElementID: "my-unity-fullscreen-container-id", in this configuration field to
+        // explicitly point to the element tree root that is displayed in fullscreen mode.
+        fullscreenElementID: "unity-fullscreen-container",
+
+        companyName: "Gadza",
+        productName: "2048 Puzzle",
         productVersion: "1.0",
         showBanner: unityShowBanner,
+        // errorHandler: function(err, url, line) {
+        //    alert("error " + err + " occurred at line " + line);
+        //    // Return 'true' if you handled this error and don't want Unity
+        //    // to process it further, 'false' otherwise.
+        //    return true;
+        // },
       };
 
       // By default, Unity keeps WebGL canvas render target size matched with
@@ -92,7 +105,7 @@
         meta.name = 'viewport';
         meta.content = 'width=device-width, height=device-height, initial-scale=1.0, user-scalable=no, shrink-to-fit=yes';
         document.getElementsByTagName('head')[0].appendChild(meta);
-        container.className = "unity-mobile";
+        document.querySelector("#unity-container").className = "unity-mobile";
         canvas.className = "unity-mobile";
 
         // To lower canvas resolution on mobile devices to gain some
@@ -101,24 +114,30 @@
 
 
       } else {
-        // Desktop style: Render the game canvas in a window that can be maximized to fullscreen:
-
-        canvas.style.width = "960px";
-        canvas.style.height = "600px";
+        // Desktop style: Render the game canvas container in a window that can be maximized to fullscreen:
+        fullscreenContainer.style.width = "960px";
+        fullscreenContainer.style.height = "600px";
       }
 
-      loadingBar.style.display = "block";
 
       var script = document.createElement("script");
       script.src = loaderUrl;
       script.onload = () => {
+        const loadingContainer = document.querySelector("#unity-loading-container");
+        const progressBarFull = document.querySelector("#unity-progress-bar-full");
+
         createUnityInstance(canvas, config, (progress) => {
-          progressBarFull.style.width = 100 * progress + "%";
-              }).then((unityInstance) => {
-                loadingBar.style.display = "none";
-                fullscreenButton.onclick = () => {
+          if (progress < 1) {
+            loadingContainer.style.display = "block";
+            progressBarFull.style.width = 100 * progress + "%";
+          } else {
+            loadingContainer.style.display = "none";
+          }
+        }).then((unityInstance) => {
+                document.querySelector("#unity-fullscreen-button").onclick = () => {
                   unityInstance.SetFullscreen(1);
                 };
+
               }).catch((message) => {
                 alert(message);
               });
